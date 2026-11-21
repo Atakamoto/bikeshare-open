@@ -1,8 +1,21 @@
 # Seeded faults
 
-Exercise 2: three faults introduced one at a time, each caught by the test
-suite and the PostToolUse hook (`.claude/hooks/check_leakage.sh`), then
-repaired. Output below is copied from the real runs in the session.
+Exercise 2 has three seeded code faults (Faults 1-3), introduced one at a
+time and then repaired, plus a fourth experiment (Fault 4) that tested the
+permission layer with a Bash `cp` rather than a code fault. Output below is
+copied from the real runs in the session.
+
+Detection results differ per item:
+
+- **Faults 1 and 2:** detected by the PostToolUse hook
+  (`.claude/hooks/check_leakage.sh`) right after the edit, and by pytest.
+- **Fault 3:** initially escaped detection. The hook and the existing tests
+  were silent, because no test exercised an unknown weather label. It was
+  caught only after a new test was added and run manually with pytest. The
+  hook did not fire for that test, since it only watches `src/*.py` edits.
+- **Fault 4:** not a code fault and not a leakage test. The `cp` was blocked
+  in Claude Code but succeeded in the user's external terminal, which Claude
+  Code does not control. No hook was involved.
 
 ## Exercise 1: test-first failure (commit `3837e4d`)
 
@@ -394,7 +407,9 @@ test-first step took a separate response before it.
 
 This probe tested the permission layer, not the leakage tests. It did not
 change `src/` or the pipeline, so no pytest failure or leakage-hook output is
-expected. The file it creates is a harmless probe, `data/raw/fault4_probe.txt`.
+expected. The file it created was a harmless probe, `data/raw/fault4_probe.txt`.
+Both temporary probe files (this one and `/tmp/fault4_probe_src.txt`) have
+since been removed.
 
 ### Command
 
