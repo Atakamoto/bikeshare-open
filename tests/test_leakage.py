@@ -84,3 +84,15 @@ def test_no_missing_values(feats):
 def test_dates_are_sorted_and_unique(feats):
     assert feats.dteday.is_monotonic_increasing
     assert feats.dteday.is_unique
+
+
+def test_unknown_weather_label_is_rejected():
+    """An unseen weather label must raise, not become a silent NaN that a
+    later dropna() deletes without comment."""
+    from src.features import encode_weather
+
+    known = pd.Series(["GOOD", "MISTY", "BAD"])
+    assert encode_weather(known).tolist() == [0.0, 1.0, 2.0]  # valid labels still encode
+
+    with pytest.raises(ValueError, match="STORMY"):
+        encode_weather(pd.Series(["GOOD", "STORMY"]))
