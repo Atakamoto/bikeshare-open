@@ -56,3 +56,35 @@ def test_persistence_baseline_is_reported():
     """The baseline that matters for a lag-driven model is 'yesterday again'.
     It must be in the comparison, whatever its score."""
     assert "baseline_persistence" in MODELS
+
+
+def test_unclassified_raw_column_is_rejected():
+    """A raw column nobody has classified must stop ingest, not flow through.
+
+    `feature_columns()` admits every numeric column not in FORBIDDEN, so a new
+    numeric column in a refreshed CSV (say `cnt_next_day`, or a `casual` rename)
+    would silently become a model input. The contract therefore requires every
+    raw column to be listed in `EXPECTED_RAW_COLS`.
+
+    Works on an in-memory copy; the CSV on disk is never touched.
+    """
+    from src.ingest import validate_raw
+
+    clean = load_raw()
+    validate_raw(clean)  # the real data passes
+
+    tampered = clean.copy()
+    tampered["cnt_tomorrow"] = tampered[TARGET].shift(-1)
+    with pytest.raises(ValueError, match="cnt_tomorrow"):
+        validate_raw(tampered)
+
+    # Rejection must be specific to the unknown column, not a side effect.
+    assert "cnt_tomorrow" not in clean.columns
+
+
+def test_missing_required_column_is_still_rejected(raw):
+    """Guard: adding the unexpected-column check must not loosen the old one."""
+    from src.ingest import validate_raw
+
+    with pytest.raises(ValueError, match="casual"):
+        validate_raw(raw.drop(columns=["casual"]))

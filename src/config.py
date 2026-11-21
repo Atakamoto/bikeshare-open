@@ -45,11 +45,28 @@ UNVERIFIED_COLS = {"cnt_2d_bfr"}
 # What feature_columns() and the tests actually enforce.
 FORBIDDEN = LEAKAGE_COLS | TIME_INDEX_COLS | UNVERIFIED_COLS
 
+# Every column the raw CSV is allowed to have. ingest rejects anything else,
+# because feature_columns() admits any numeric column not in FORBIDDEN: a new
+# unreviewed column would silently become a model input. Columns here are
+# either excluded above, derivable from `dteday` (season, mnth, weekday), or
+# a feature source (weather, calendar flags, temp/atemp/hum/windspeed).
+EXPECTED_RAW_COLS = {
+    "dteday", "season", "mnth", "weekday", "holiday", "workday", "weather",
+    "temp", "atemp", "hum", "windspeed",
+} | FORBIDDEN
+
 # Temporal split: train on 2011, validate on H1 2012, test on H2 2012.
 TRAIN_END = "2011-12-31"
 VALID_END = "2012-06-30"
 
+# Window lengths for the lagged-target features in src/features.py. Kept
+# separate from LAG_WARMUP so raising the warmup never changes what an
+# existing feature means.
+LAG_WEEK = 7        # cnt_lag_7 shift
+ROLL_SHORT = 7      # cnt_roll_7 window
+ROLL_LONG = 14      # cnt_roll_14 window
+
 # Longest lag window in src/features.py. The first LAG_WARMUP calendar days
 # have no complete history and are dropped; tests/test_contract.py uses this
 # to bound how many rows may legitimately disappear.
-LAG_WARMUP = 7
+LAG_WARMUP = max(LAG_WEEK, ROLL_SHORT, ROLL_LONG)  # 14
