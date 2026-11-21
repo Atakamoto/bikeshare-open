@@ -57,6 +57,26 @@ def test_rolling_mean_excludes_today(feats):
         assert feats.set_index("dteday").cnt_roll_7[date] == pytest.approx(expected)
 
 
+def test_roll_14_hand_computed_on_known_date(feats):
+    """cnt_roll_14 on 2012-06-15 is the mean of 2012-06-01..2012-06-14.
+
+    Counts below are copied from the raw CSV, not read from `feats`, so the
+    expectation is independent of the code under test. 2012-06-15's own
+    count (7665) must NOT be in the window.
+    """
+    prior_14 = [
+        4127, 8120, 7641, 6998, 7001, 7055, 7494,  # Jun 1-7
+        7736, 7498, 6598, 6664, 4972, 7421, 7363,  # Jun 8-14
+    ]
+    assert len(prior_14) == 14
+    expected = sum(prior_14) / 14  # 96688 / 14 = 6906.2857...
+    row = feats.set_index("dteday").loc[pd.Timestamp("2012-06-15")]
+    assert row[TARGET] == 7665, "fixture date changed; recompute the window"
+    assert row.cnt_roll_14 == pytest.approx(expected)
+    # Including today would give a different answer, so this also pins shift(1).
+    assert row.cnt_roll_14 != pytest.approx((sum(prior_14[1:]) + 7665) / 14)
+
+
 def test_no_missing_values(feats):
     assert feats[feature_columns(feats)].isna().sum().sum() == 0
 
