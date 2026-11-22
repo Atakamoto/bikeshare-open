@@ -189,7 +189,7 @@ On top of that, `build_features` calls `dropna()` with no assertion of its own. 
 
 ## My independent verdict
 
-This section is my own assessment of the subagent's findings. I did not independently reproduce the experiments or numbers cited here. They are attributed to the peer-audit subagent's report above.
+This section reflects my reviewed judgments on the subagent's findings; the wording was drafted by Claude Code under my direction. I did not independently reproduce the experiments or numbers cited here. They are attributed to the peer-audit subagent's report above.
 
 **F1 — Agree, conditional on next-day forecasting.** Actual same-day observed weather is unavailable at the previous day's prediction time. The subagent's reported ablation changes ridge validation R² from 0.7224 to 0.5793 and MAE from 700.4 to 884.2. If the task instead assumes accurate same-day weather forecasts, that assumption must be documented.
 
