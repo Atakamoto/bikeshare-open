@@ -1,11 +1,8 @@
 {
-  "model": "bikeshare-coder",
-  "env": {
-    "ANTHROPIC_BASE_URL": "http://localhost:11434",
-    "ANTHROPIC_AUTH_TOKEN": "ollama",
-    "ANTHROPIC_API_KEY": "",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
-  },
+"model": "sonnet",
+"env": {
+  "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+},
   "hooks": {
     "PostToolUse": [
       {
@@ -29,10 +26,10 @@
       "Bash(git diff:*)",
       "Bash(git status)"
     ],
-    "deny": [
-      "Write(./data/raw/**)",
-      "Edit(./data/raw/**)",
-      "Bash(rm -rf:*)"
-    ]
+  "deny": [
+    "Write(./data/raw/**)",
+    "Edit(./data/raw/**)",
+    "Bash(rm -rf:*)"
+  ]
   }
 }
